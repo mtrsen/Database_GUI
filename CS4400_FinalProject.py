@@ -8,31 +8,26 @@ from tkinter import ttk as ttk
 class Project:
     
     def __init__(self, root):
-        
         self.root = root
-
         self.currDate = date.today()
         self.today = self.currDate.strftime("%Y-%m-%d")
-
-        
         self.LoginPage()
 
     def LoginPage(self):
+        # Log-in page. It starts the application by asking the user
+        # its username or password or a new user registration.
         aWin = Toplevel()
         aWin.title("Login")
         aWin.geometry("500x350+0+0")
         self.aWin = aWin
-
         header = Canvas(aWin, width=700, height=100)
         header.pack()
-        header.create_rectangle(10,5,490,50)   #corrected
-        title = header.create_text(250,27.5) #changed
-
+        header.create_rectangle(10,5,490,50)
+        title = header.create_text(250,27.5)
         header.itemconfig(title, text="Login", font=('normal', 14), fill =  "goldenrod") #changed
-        frame1=Frame(aWin)
+        frame1 = Frame(aWin)
         frame1.pack()
         frame1.config(pady=15)
-
         L1 = Label(frame1, anchor="e", text="Username:", width=15)
         L1.grid(row=0, column=0)
 
@@ -52,6 +47,8 @@ class Project:
         B2.grid(row=2, column=3, pady=20, padx= 10, ipadx=10, sticky=S)
 
     def CreateAccount(self):
+        # Creates the window for the new user registration.
+        # Gets all the values from the user type from the database, as well as the combinations of city and state
         self.aWin.withdraw()
         bWin = Toplevel()
         bWin.title("New User Registration")
@@ -67,7 +64,7 @@ class Project:
         title = header.create_text(250, 40)
 
         header.itemconfig(title, text="New User Registration", font=('normal', 14), fill = "goldenrod") #changed
-        Frame1=Frame(bWin)
+        Frame1 = Frame(bWin)
         Frame1.pack(pady=10)
 
         L1 = Label(Frame1, anchor="e", text="Username:", width=15)
@@ -79,17 +76,14 @@ class Project:
         L2.grid(row=1, column=0, sticky = W)
         self.E2_bWin = Entry(Frame1, state="normal", bd=1, width=20)
         self.E2_bWin.grid(row=1, column=1, padx = 20, pady = 10)
-
         L3 = Label(Frame1, anchor="e", text="Password:", width=15)
         L3.grid(row=2, column=0)
         self.E3_bWin = Entry(Frame1, state="normal", bd=1, width=20, show="*")
         self.E3_bWin.grid(row=2, column=1, padx = 20, pady = 10)
-
         L4 = Label(Frame1, anchor="e", text="Confirm Password:", width=15)
         L4.grid(row=3, column=0)
         self.E4_bWin = Entry(Frame1, state="normal", bd=1, width=20)
         self.E4_bWin.grid(row=3, column=1, padx = 20, pady = 10)
-
         L5 = Label(Frame1, text="User Type", width=20)
         L5.grid(row=4, column=0, columnspan=2, pady=10, padx=15, sticky=W)
 
@@ -102,7 +96,6 @@ class Project:
         for element in newlist:
             if element[0] not in options and element[0] != "Admin":
                 options.append(element[0])
-
         var = StringVar()
         var.set("User Type")
         drop = OptionMenu(Frame1, var, *options)
@@ -125,25 +118,17 @@ class Project:
         c = db.cursor()
         c.execute("SELECT City, State FROM CITYSTATE")
         newtup = c.fetchall()
-        print(newtup)
-
         L1_2 = Label(Frame2, anchor="e", text="State:", width=15)
-        L1_2.grid(row=1, column=0, sticky= W)
+        L1_2.grid(row=1, column=0, sticky = W)
 
         newlist= list(newtup)
         citylist = []
         statelist = []
-        print(newlist)
         for element in newlist:
-            print(element[0])
             if element[0] not in citylist:
                 citylist.append(element[0])
             if element[1] not in statelist:
                 statelist.append(element[1])
-
-        print(citylist)
-        print(statelist)
-
         options2 = citylist
         var2 = StringVar()
         var2.set("City")
@@ -156,13 +141,10 @@ class Project:
         drop3 = OptionMenu(Frame2, var3, *options3)
         drop3.grid(row=1, column=1, padx=10)
         self.drop3 = drop3
-
         L1_3 = Label(Frame2, anchor="e", text="Title:", width=15)
         L1_3.grid(row=2, column=0, sticky = W)
         self.E1_1_bWin = Entry(Frame2, state="normal", bd=1, width=20)
-        self.E1_1_bWin.grid(row=2, column=1,padx = 10)
-
-
+        self.E1_1_bWin.grid(row=2, column=1,padx=10)
         B1 = Button(Frame2, text="Create", command=self.RegisterNew, width=10)
         B1.grid(row=3, column=1, pady=10)
        
@@ -170,10 +152,15 @@ class Project:
         B2.grid(row=4, column=1, pady=10)
 
     def backtoLogin0(self):
+        # function used to close and open a new window
         self.LoginPage()
         self.bWin.withdraw()
 
     def LoginCheck(self):
+        # checks if the values that the user inputs are valid.
+        # If the selected statements bring no results, then an error occurs.
+        # the sql statement gives our the values for the usertype.
+        # We create new variables and we do error checking from those variables
         username = self.E1_aWin.get()
         username = username.lower()
         self.username = username
@@ -182,8 +169,7 @@ class Project:
         c = db.cursor()
         c.execute("SELECT UserType FROM USER WHERE Username = %s AND Password = %s", (username, password))
         try:
-            userType= c.fetchone()[0]
-            print(userType)
+            userType = c.fetchone()[0]
             if userType.lower() == "city scientist":
                 self.addNewDataPoint()
                 self.aWin.withdraw()
@@ -191,38 +177,48 @@ class Project:
                 self.AdminFunct()
                 self.aWin.withdraw()
             elif userType.lower() == "city official":
+                c = db.cursor()
+                print("Hola")
+                c.execute("SELECT Approved FROM CITYOFFICIAL NATURAL JOIN USER WHERE USERNAME = %s",(username))
+                validation = c.fetchone()[0]
+                if validation == "None":
+                    messagebox.showwarning("Account not yet accepted", "Your account has not been accepted. Please allow more time until the account accepted.")
+                    return
+                if validation == "No":
+                    messagebox.showwarning("Your account has been rejected", "You do not have access to the application")
+                    return
                 self.CityOffFunct()
                 self.aWin.withdraw()
         except:
-            messagebox.showerror("Invalid Username/Password", "You have entered an unrecognizable username/password combination. Please try again.")
+            messagebox.showerror("Invalid Username/Password", "You have entered an unrecognizable username/password "
+                                                              "combination. Please try again.")
             return
 
     def RegisterNew(self):
-
+        # based on the data that the user input in the database,
+        # we make sure everything is input correctly and we excecute statements based on the values inserted.
         response = self.drop.cget("text")
-
+        title = self.E1_1_bWin.get()
         response1 = self.drop2.cget("text")
         response2 = self.drop3.cget("text")
         if response == "User Type":
-            messagebox.showwarning("Invalid Selection.", """Invalid Selection. \n\n Please make a valid selection.""")
+            messagebox.showwarning("Invalid Selection.","""Invalid Selection. \n\n Please make a valid selection.""")
             return
         if response.lower == "city official":
-            if response1== "City":
-                messagebox.showwarning("Invalid Selection.", """Invalid Selection. \n\n Please select a city.""")
+            if response1 == "City":
+                messagebox.showwarning("Invalid Selection.","""Invalid Selection. \n\n Please select a city.""")
                 return
             if response2 == "State":
-                messagebox.showwarning("Invalid Selection.", """Invalid Selection. \n\n Please select a state.""")
+                messagebox.showwarning("Invalid Selection.","""Invalid Selection. \n\n Please select a state.""")
                 return
             db = self.Connect()
             c = db.cursor()
-            b = c.execute("SELECT City, State FROM CITYSTATE WHERE City= %s AND State = %s", (response1, response2))
+            c.execute("SELECT City, State FROM CITYSTATE WHERE City= %s AND State = %s", (response1, response2))
             ans = c.fetchone()
-            print(ans)
             if not ans:
-                messagebox.showerror("Invalid Selection.", """Invalid Selection. \n\n The city and State doesn't exist.""")
+                messagebox.showerror("Invalid Selection.","""Invalid Selection. \n\n The city and State doesn't
+                exist.""")
                 return
-
-
         username = self.E1_bWin.get()
         username = username.lower()
         emailAddress = self.E2_bWin.get()
@@ -230,56 +226,73 @@ class Project:
         self.username = username
         password = self.E3_bWin.get()
         confirm = self.E4_bWin.get()
-
         city = self.drop2.cget("text")
         state = self.drop3.cget("text")
-
-        if password != confirm:
-            messagebox.showerror("Invalid Selection.","""Wrong Password Confirmation. \n\n Please same passwords.""")
-            return
-        if response.lower() == "city official":
-            db= self.Connect()
-            c = db.cursor()
-            ans = c.execute("SELECT City, State FROM CITYSTATE WHERE City = %s AND State = %s", (city, state))
-            if ans == 0:
-                messagebox.showerror("Invalid City/State", "The City and State you entered are not valid. Please provide an accessible area.")
+        entry_list = [username, emailAddress, password, confirm]
+        flag = False
+        for entry in entry_list:
+            if not entry:
+                messagebox.showerror("Invalid Format.", """Invalid Insertion. \n\n
+                The field can not be empty. Please fill all fields!""")
+                break
+            flag = True
+        if flag:
+            if password != confirm:
+                messagebox.showerror("Invalid Selection.","""Wrong Password Confirmation. \n\n Please same passwords.""")
                 return
+            if response.lower() == "city official":
+                db= self.Connect()
+                c = db.cursor()
+                ans = c.execute("SELECT City, State FROM CITYSTATE WHERE City = %s AND State = %s", (city, state))
+                if ans == 0:
+                    messagebox.showerror("Invalid City/State", "The City and State you entered are not valid. "
+                                                           "Please provide an accessible area.")
+                    return
+                else:
+                    pass
+
+            db = self.Connect()
+            c = db.cursor()
+            ans = c.execute("SELECT EmailAddress FROM USER WHERE Username = %s", (username))
+            ans1 = c.execute("SELECT Username FROM USER WHERE EmailAddress = %s", (emailAddress))
+
+            if ans >= 1:
+                messagebox.showwarning("Invalid Username", "The username you entered is already taken. "
+                                                       "Please choose another.")
+            elif ans1 >= 1:
+                messagebox.showwarning("Invalid Email-Address", "The Email Address that you entered is already taken. "
+                                                            "Please choose another.")
             else:
-                pass
+                try:
+                    c.execute("INSERT INTO USER VALUES (%s,%s, %s,%s)", (emailAddress, username,password, response))
 
-        db = self.Connect()
-        c = db.cursor()
-        ans = c.execute("SELECT EmailAddress FROM USER WHERE Username = %s", (username))
-        ans1 = c.execute("SELECT Username FROM USER WHERE EmailAddress = %s", (emailAddress))
-        #h = list(ans.fetchall())
-        #h1 = list(ans1.fetchall())
-
-        if ans >= 1:
-            messagebox.showwarning("Invalid Username", "The username you entered is already taken. Please choose another.")
-        elif ans1 >= 1:
-            messagebox.showwarning("Invalid Email-Address", "The Email Address that you entered is already taken. Please choose another.")
-        else:
-            try:
-                c.execute("INSERT INTO USER VALUES (%s,%s, %s,%s)", (emailAddress, username,password, response))
-                messagebox.showinfo("Account Created Successfully!!", "Please sign-in with your new account.")
-                c.close()
-                self.LoginPage()
-                self.bWin.withdraw()
-            except MySQLError as err:
-                messagebox.showerror("Something went wrong: {}".format(err))
+                    if response.lower() == "city official":
+                        if title == "":
+                            messagebox.showerror("Invalid Title Format." ,"""Invalid Insertion. \n\n The title can
+                            not be empty. Please input a valid title""")
+                            return
+                        c2 = db.cursor()
+                        c2.execute("INSERT INTO CITYOFFICIAL VALUES (%s,%s, %s, %s, %s)",(emailAddress, title, "None", city, state))
+                        messagebox.showinfo("Account Created Successfully!!", "Please sign-in with your new account.")
+                    c.close()
+                    self.LoginPage()
+                    self.bWin.withdraw()
+                except:
+                    messagebox.showerror("Invalid input","""Invalid input. \n\n Please insert a valid input""")
 
     def addNewDataPoint(self):
-
+        # Builds the window for adding new data points.
+        # Gets locations and data types from the database. Window gets all the values for further use.
         cWin = Toplevel()
-        cWin.title("Add a new data point") #corrected LOL
-        cWin.geometry("900x350+0+0") #changed
+        cWin.title("Add a new data point")
+        cWin.geometry("900x350+0+0")
 
         self.cWin=cWin
 
         header = Canvas(cWin, width=500, height=65)
         header.pack()
-        header.create_rectangle(10,10,490,50) #corrected
-        title = header.create_text(250,30) #changed
+        header.create_rectangle(10,10,490, 50)
+        title = header.create_text(250,30)
 
         header.itemconfig(title, text="Add a new data point", font=('normal', 14), fill = "goldenrod") #changed
         Frame1=Frame(cWin)
@@ -296,11 +309,11 @@ class Project:
             if element[0] not in citylist:
                 citylist.append(element[0])
 
-        L2_1 = Label(Frame1, anchor="e", text="City:", width=15)
+        L2_1 = Label(Frame1, anchor="e", text="POI Location Name:", width=15) 
         L2_1.grid(row=0, column=0, sticky = W)
         options1 = citylist 
         var1 = StringVar()
-        var1.set("Select City")
+        var1.set("Select POI Location") 
         drop4 = OptionMenu(Frame1, var1, *options1)
         drop4.grid(row=0, column=1, padx=10)
         self.drop4 = drop4
@@ -314,14 +327,21 @@ class Project:
 
         L2_3 = Label(Frame1, anchor="e", text="Data type:", width=15)
         L2_3.grid(row=2, column=0, sticky = W)
-        options2 = ["Mold", "Air Quality"]
+
+        c = db.cursor()
+        c.execute("SELECT Type FROM DATATYPE")
+        newtup10 = c.fetchall()
+        newlist10= list(newtup10)
+        typelist = []
+        for element in newlist10:
+            if element[0] not in typelist:
+                typelist.append(element[0])
+
         var2 = StringVar()
         var2.set("DataType")
-        drop5 = OptionMenu(Frame1, var2, *options2)
+        drop5 = OptionMenu(Frame1, var2, *typelist)
         drop5.grid(row=2, column=1, padx=10)
         self.drop5 = drop5
-
-
         L2_4 = Label(Frame1, anchor="e", text="Data Value:", width=15)
         L2_4.grid(row=3, column=0, sticky = W)
 
@@ -329,12 +349,10 @@ class Project:
         self.E1_1_cWin = Entry(Frame1, state="normal", bd=1, width=20, textvariable= var2)
         self.E1_1_cWin.grid(row=3, column=1,padx = 10)
         self.var2= var2
-
         v = StringVar(root, value='yyyy-mm-dd')
         self.E1_4_cwin = Entry(Frame1, state= "normal", textvariable= v)
         self.E1_4_cwin.grid(row = 1, column = 1)
-        self.v = v  
-
+        self.v = v
         var = StringVar(root, value='hh:mm')
         self.E1_5_cwin = Entry(Frame1, state= "normal", textvariable= var)
         self.E1_5_cwin.grid(row=1, column =3)
@@ -347,11 +365,15 @@ class Project:
         B2 = Button(Frame1, text="Sumbit", command=self.submitNewDataPoint, width=10)
         B2.grid(row=4, column=2, pady=10)
 
-        B3 = Button(Frame1, text="Add a new location", command=self.addNewLocation,fg = "blue", width=10, padx= 20, bd=0)
+        B3 = Button(Frame1, text="Add a new location", command=self.addNewLocation,fg = "blue", width=11, padx= 20, bd=0)
         B3.grid(row=0, column=2, pady=10)
 
+
     def submitNewDataPoint(self):
-        db = self.Connect()
+        # upon the values inserted in the data point window, this function processes the sql
+        # statemens bases on the values inserted.
+        # Used datastrp time to have it organized in python and to add the object in the database.
+        db = self.Connect() 
         c = db.cursor()
         city = self.drop4.cget("text")
 
@@ -369,18 +391,17 @@ class Project:
         except:
             messagebox.showerror("Invalid Data Value", "The value must be an integer.")
             return
-        print(value)
         datetimefinal = date+" " +time
         try:
-            datetime.datetime.strptime(datetimefinal, "%Y-%m-%d %H:%M")
+            timedate = datetime.datetime.strptime(datetimefinal, "%Y-%m-%d %H:%M")
         except: 
             messagebox.showerror("Invalid Date/Time Format",
                                  "The format of the day or time is incorrect. Please insert a vaild one.")
             return
         try:
             c.execute("INSERT INTO DATAPOINT (DateTime, DLocationName, DataValue, DType) VALUES "
-                      "(%s, %s, %s, %s)", (datetimefinal, city, value, datatype))
-            messagebox.showinfo ("Operation Successfull!", "Point was added Successfully")
+                      "(%s, %s, %s, %s)", (timedate, city, value, datatype))
+            messagebox.showinfo ("Operation Successfull!", "Point was sent for confirmation approval")
             self.cWin.withdraw()
             self.addNewDataPoint()    
         except:
@@ -388,9 +409,11 @@ class Project:
             return
 
     def addNewLocation(self):
+        # This function creates the layout for adding a new location. We are abstracting
+        # the combination between city and state from the batabase.
         dWin = Toplevel()
-        dWin.title("Add a new location") #corrected
-        dWin.geometry("500x350+0+0") #changed
+        dWin.title("Add a new location")
+        dWin.geometry("500x350+0+0")
         self.dWin=dWin
         header = Canvas(dWin, width=500, height=65)
         header.pack()
@@ -415,8 +438,6 @@ class Project:
                 citylist.append(element[0])
             if element[1] not in statelist:
                 statelist.append(element[1])
-
-
         L3_1 = Label(Frame1, anchor="e", text="POI Location Name:", width=15)
         L3_1.grid(row=0, column=0, sticky = W)
         self.E1_1_dWin = Entry(Frame1, state="normal", bd=1, width=20)
@@ -454,6 +475,8 @@ class Project:
         self.cWin.withdraw()
 
     def includePoint(self):
+        # inserts the information from the desired location. Checks that for correct input
+        # if all the format is met, includes the given data into the database.
         db = self.Connect()
         c = db.cursor()
         POI = self.E1_1_dWin.get()
@@ -482,6 +505,7 @@ class Project:
             return
 
     def CityOffFunct(self):
+        # Function builds the main window for the city official functionality.
         cityWin = Toplevel()
         cityWin.title('City Official')
         cityWin.geometry("650x350+1+1")
@@ -505,25 +529,27 @@ class Project:
         button1.pack(side=TOP, fill=BOTH, padx=100)
 
     def viewPois(self):
+        # Creates the first layout for the first functionality for city officials.
+        # Gets the values from the database, and creates the necessary spaces for the user data input
         self.cityWin.withdraw()
         fWin = Toplevel()
-        fWin.title("View POIs") #corrected
-        fWin.geometry("900x400+0+0")
+        fWin.title("View POIs") 
+        fWin.geometry("800x350+0+0")
 
         self.fWin=fWin
 
         header = Canvas(fWin, width=500, height=65)
         header.pack()
-        header.create_rectangle(10,10,490,50) #corrected
-        title = header.create_text(250,27.5) #changed
+        header.create_rectangle(10,10,490,50)
+        title = header.create_text(250,27.5)
 
-        header.itemconfig(title, text="View POIs", font=('normal', 14), fill = "goldenrod") #changed
+        header.itemconfig(title, text="View POIs", font=('normal', 14), fill = "goldenrod")
         Frame1=Frame(fWin)
         Frame1.pack(pady=10)
 
         db = self.Connect()
         c = db.cursor()
-        ans = c.execute("SELECT LocationName FROM POI")
+        c.execute("SELECT LocationName FROM POI")
         newtup = c.fetchall()
         
         newlist= list(newtup)
@@ -617,14 +643,18 @@ class Project:
         B3.grid(row=6, column=1, pady=10)
 
     def goBack2(self):
+        # allows to close window and to redirect to another one
         self.fWin.withdraw()
         self.CityOffFunct()
 
     def reset2(self):
+        # allows to close window and to redirect to another one
         self.fWin.withdraw()
         self.viewPois()
 
     def CreateUI(self):
+        # ased on the parameters of search from the user, a new report is created, using the tool "treeview".
+        # The treeview is built
         from tkinter import ttk as ttk
         self.var4 = self.var4.get()
         if self.var4 ==1:   
@@ -639,15 +669,18 @@ class Project:
         self.fWin.withdraw()
 
         gWin = Toplevel()
-        gWin.title("POIs") #corrected
-        gWin.geometry("700x500+0+0")
+        gWin.title("POIs")
+        gWin.geometry("700x350+0+0")
         self.gWin=gWin
         header = Canvas(gWin, width=500, height=65)
         header.pack()
-        header.create_rectangle(10,5,490,50) #changed
-        title = header.create_text(250,27.5) #changed
+        header.create_rectangle(10,5,490,50)
+        title = header.create_text(250,27.5)
+        header.itemconfig(title, text="View POIs (filtered)", font=('normal', 14), fill = "goldenrod")
 
-        header.itemconfig(title, text="View POIs (filtered)", font=('normal', 14), fill = "goldenrod") #changed
+        warning = header.create_text(120, 61)
+        header.itemconfig(warning, text="Please double click to view details of POI", font=('normal', 12), fill="red")
+
         Frame1=Frame(gWin)
         Frame1.pack(pady=10)
 
@@ -668,7 +701,7 @@ class Project:
         tv.column('Flagged?', anchor='center', width=100)
         tv.heading("Date Flagged", text='Date Flagged')
         tv.column('Date Flagged', anchor='center', width=100)
-        tv.grid(row = 0, column = 1)#sticky = (N,S,W,E))
+        tv.grid(row = 0, column = 1)
         self.tv.bind("<Double-1>", self.OnDoubleClick)
         self.treeview = tv
         B1 = Button(Frame1, text="Back", command=self.gobackPOIS, width=10)
@@ -676,12 +709,13 @@ class Project:
         self.LoadTable()
 
     def gobackPOIS(self):
+        # allows to close window and to redirect to another one
         self.gWin.withdraw()
         self.viewPois()
 
     def LoadTable(self):
+        # Function that allows the treeview to be completed. Inserting all of the necessary parameters and using our sql statements.
         if self.var4 == 0:
-            print("buena perro")
             LocationName = self.drop8.cget("text")
             City = self.drop9.cget("text")
             State = self.drop10.cget("text")
@@ -696,7 +730,6 @@ class Project:
             for values in newlist:
                 self.treeview.insert("", 'end', text=values[0], values=(values[4],values[5], values[3],values[2], "N/A"))
         else:
-            print("sapo perro gonorrea")
             LocationName = self.drop8.cget("text")
             City = self.drop9.cget("text")
             State = self.drop10.cget("text")
@@ -712,37 +745,39 @@ class Project:
             newlist = list(newtup)
             var = StringVar()
             for values in newlist:
-                self.treeview.insert("", 'end', text=values[0], values=(values[4],values[5], values[3],values[2],values[1] )) #change the values for yes
+                self.treeview.insert("", 'end', text=values[0], values=(values[4],values[5], values[3],values[2],values[1] ))
+
     def OnDoubleClick(self, event):
+        # function that allows to take any actions when the row is clicked
         item = self.tv.selection()[0]
         self.item = item
         self.POIDetail()
         print("you clicked on", self.tv.item(item,"text"))
 
     def POIDetail(self):
+        # When the value gets clicked, this function is called.
+        # Function builds the interface for POI detail. Gets the datatypes from the database.
+        # Filters the information by using entries.
         self.gWin.withdraw()
 
         hWin = Toplevel()
-        hWin.title("PIO Location: " + self.tv.item(self.item,"text") )
-        hWin.geometry("700x500+0+0")
+        hWin.title("POI Location: " + self.tv.item(self.item,"text") )
+        hWin.geometry("900x300+0+0")
 
         self.hWin=hWin
 
         header = Canvas(hWin, width=500, height=65)
         header.pack()
-        header.create_rectangle(10,5,490,50) #changed
-        title = header.create_text(250,27.5) #changed
+        header.create_rectangle(10,5,490,50)
+        title = header.create_text(250,27.5)
 
-        header.itemconfig(title, text="View The Details of the " + self.tv.item(self.item,"text") + " POI", fill = "goldenrod", font=('normal', 14)) #changed
+        header.itemconfig(title, text="Details of the " + self.tv.item(self.item,"text") + " POI", fill = "goldenrod", font=('normal', 14)) #changed
         Frame1=Frame(hWin)
         Frame1.pack(pady=10)
 
-        LH_0 = Label(Frame1, anchor="e", text="POI DETAIL", width=15) #corrected
-        LH_0.grid(row=0, column=2, sticky = W)
-
         db = self.Connect()
         c = db.cursor()
-        ans3 = c.execute("SELECT Type FROM DATATYPE")
+        c.execute("SELECT Type FROM DATATYPE")
         newtup2 = c.fetchall()
         
         newlist2= list(newtup2)
@@ -800,14 +835,19 @@ class Project:
         B3.grid(row=4, column=1, pady=10)
 
     def goBack(self):
+        # allows to close window and to redirect to another one
         self.hWin.withdraw()
         self.viewPois()
 
     def resetFilter(self):
+        # allows to close window and to redirect to another one
         self.hWin.withdraw()
         self.POIDetail()
 
     def CreateUI2(self):
+        # based on the filter parameters on the POI Detail search, we create another window
+        # with the tkinter "treeview".
+
         try:
             int(self.var7.get())
             int(self.var8.get())
@@ -825,7 +865,7 @@ class Project:
 
         jWin = Toplevel()
         jWin.title("POI Detail Search")
-        jWin.geometry("700x500+0+0")
+        jWin.geometry("800x400+0+0")
 
         self.jWin=jWin
 
@@ -833,8 +873,10 @@ class Project:
         header.pack()
         header.create_rectangle(10,5,500,50)
         title = header.create_text(250,27.5)
-
         header.itemconfig(title, text="POI Details Search", font=('normal', 14), fill = "goldenrod")
+        warning = header.create_text(110,61)
+        header.itemconfig(warning, text="Please double click to select POI detail", font=('normal',12), fill="red")
+
         Frame1=Frame(jWin)
         Frame1.pack(pady=10)
 
@@ -862,6 +904,7 @@ class Project:
         self.LoadTable2()
 
     def LoadTable2(self):
+        #getting the values from the filters will allow to populate the treeview. Once we get all the values, we do an SQL statement that filters our desired tuples.
         Type = self.drop11.cget("text")
         lowerBound = int(self.var7.get())
         upperBound = int(self.var8.get())
@@ -874,8 +917,9 @@ class Project:
 
         db = self.Connect()
         c = db.cursor()
-
-        ans = c.execute("SELECT DType, DataValue, DateTime FROM DATAPOINT WHERE DLocationName = %s AND Dtype = %s AND DataValue BETWEEN %s AND %s AND DateTime BETWEEN %s AND %s",(name, Type, lowerBound, upperBound, startdate, enddate))
+        c.execute("SELECT DType, DataValue, DateTime FROM DATAPOINT WHERE DLocationName = %s "
+                        "AND Dtype = %s AND DataValue BETWEEN %s AND %s AND DateTime BETWEEN %s AND %s "
+                  "AND Accepted = 'YES'",(name, Type, lowerBound, upperBound, startdate, enddate))
         newtup = c.fetchall()
         print(newtup)
         newlist = list(newtup)
@@ -884,29 +928,11 @@ class Project:
             self.tv2.insert("", 'end', text=values[0], values=(values[1],values[2]))
 
     def setFlag(self):
-
+        # updates the flag when the button of "flagged" is clicked
         db = self.Connect()
         c = db.cursor()
-        ans3 = c.execute("UPDATE POI SET Flag = 'Yes', DateFlagged = %s WHERE LocationName =%s",(self.today, self.tv.item(self.item,"text")))
+        c.execute("UPDATE POI SET Flag = 'Yes', DateFlagged = %s WHERE LocationName =%s",(self.today, self.tv.item(self.item,"text")))
         messagebox.showinfo("POI Flagged Successfull!!", "The selected POI is now flagged.")
-
-    def makeReport(self):
-
-        kWin = Toplevel()
-        kWin.title("Poi Report")
-        kWin.geometry("700x500+0+0")
-
-        self.kWin=kWin
-
-        header = Canvas(kWin, width=500, height=65)
-        header.pack()
-        header.create_rectangle(10,5,490,50)
-        title = header.create_text(250,27.5)
-
-        header.itemconfig(title, text="POI Details Search", font=('normal', 14, 'bold'), fill = "goldenrod") #changed
-        Frame1=Frame(kWin)
-        Frame1.pack(pady=10)
-
 
     def backorReset(self):
         self.jWin.withdraw()
@@ -915,8 +941,6 @@ class Project:
     def CityOffLogOut(self):
         self.cityWin.withdraw()
         self.LoginPage()
-        #opens login page
-
 
     def AdminFunct(self):
         adminWin=Toplevel()
@@ -948,21 +972,17 @@ class Project:
 
         pendingWin=Toplevel()
         pendingWin.title('Pending Data Points')
-        pendingWin.geometry("650x350+1+1")
+        pendingWin.geometry("800x350+1+1")
         self.pendingWin = pendingWin
-
-        body = Canvas(pendingWin, width=900, height=400)
-
-        body.create_line(0, 50, 650,50)
-        body.create_line(0, 290, 650, 290)
-        title = body.create_text(325, 100)
 
         header = Canvas(pendingWin, width=500, height=65)
         header.pack()
-        header.create_rectangle(10,5,500,50) #changed
-        title = header.create_text(250,27.5) #changed
+        header.create_rectangle(10,5,500,50)
+        title = header.create_text(250,27.5)
+        header.itemconfig(title, text="Pending Data Points", font=('normal', 14), fill = "goldenrod")
+        warning = header.create_text(110, 61)
+        header.itemconfig(warning, text="Please double click to select data point", font=('normal', 12), fill="red")
 
-        header.itemconfig(title, text="Pending Data Points", font=('normal', 14), fill = "goldenrod") #changed
         Frame1=Frame(pendingWin)
         Frame1.pack(pady=10)
 
@@ -993,10 +1013,8 @@ class Project:
         self.treeview3 = tv3
         self.LoadTable3()
         self.tv3.bind("<Double 1>", self.OnDoubleClick2)
-
         B1 = Button(Frame1, text="Accept", command=self.changeButton1, width=10)
         B1.grid(row=1, column=0, pady=10)
-
         B2 = Button(Frame1, text="Reject", command=self.changeButton2, width=10)
         B2.grid(row=1, column=2, pady=10)
 
@@ -1007,9 +1025,8 @@ class Project:
         self.adminWin.withdraw()
         db = self.Connect()
         c = db.cursor()
-        ans = c.execute("SELECT DLocationName, DType, DataValue,DateTime  FROM DATAPOINT WHERE Accepted = 'None'")
+        c.execute("SELECT DLocationName, DType, DataValue,DateTime  FROM DATAPOINT WHERE Accepted = 'None'")
         newtup = c.fetchall()
-        print(newtup)
         newlist = list(newtup)
         var = StringVar()
         for values in newlist:
@@ -1021,15 +1038,9 @@ class Project:
         except:
             messagebox.showerror("Invalid Selection.","""Invalid Selection. \n\n Please select the row with a double click""")
             return
-
-        #print(self.newitem2)
-        #print(self.newitem1)
-        #print(self.item10)
-
         db = self.Connect()
         c = db.cursor()
-
-        ans0 = c.execute("SELECT DLocationName FROM DATAPOINT WHERE Accepted = 'Yes' AND DateTime = %s AND DLocationName = %s AND DataValue = %s AND Dtype = %s",(self.newitem3, self.item10, self.newitem2, self.newitem1))
+        c.execute("SELECT DLocationName FROM DATAPOINT WHERE Accepted = 'Yes' AND DateTime = %s AND DLocationName = %s AND DataValue = %s AND Dtype = %s",(self.newitem3, self.item10, self.newitem2, self.newitem1))
         newtup1 = c.fetchall()
         newlist1 = list(newtup1)
         if len (newlist1) == 1:
@@ -1037,72 +1048,47 @@ class Project:
             return
 
         c = db.cursor()
-        print("Hola")
-        print(self.newitem3)
-        print(self.item10)
-        print(self.newitem2)
-        print(self.newitem1)
-        ans = c.execute("UPDATE DATAPOINT SET Accepted = 'Yes' WHERE DateTime = %s AND DLocationName = %s AND DataValue = %s AND Dtype = %s",(self.newitem3, self.item10, self.newitem2, self.newitem1))
+        c.execute("UPDATE DATAPOINT SET Accepted = 'Yes' WHERE DateTime = %s AND DLocationName = %s AND DataValue = %s AND Dtype = %s",(self.newitem3, self.item10, self.newitem2, self.newitem1))
         db.commit()
         newtup = c.fetchall()
-        newlist = list(newtup)
-        #if len (newlist) >= 1:
-        messagebox.showinfo("Successfully Approved!!", "Data Point was approved successfully.") 
+        list(newtup)
+        messagebox.showinfo("Successfully Approved!!", "Data Point was approved successfully.")
 
         self.pendingWin.withdraw()
         self.PendingPoints()
 
     def changeButton2(self):
-
         db = self.Connect()
         c = db.cursor()
-        ans = c.execute("UPDATE DATAPOINT SET Accepted = 'No' WHERE DateTime = %s AND DLocationName = %s AND DataValue = %s AND Dtype = %s",(self.newitem3, self.item10, self.newitem2, self.newitem1))
+        c.execute("UPDATE DATAPOINT SET Accepted = 'No' WHERE DateTime = %s AND DLocationName = %s AND DataValue = %s AND Dtype = %s",(self.newitem3, self.item10, self.newitem2, self.newitem1))
         messagebox.showinfo("Successfully Rejected!!", "Data Point was rejected successfully.") 
         self.pendingWin.withdraw()
         self.PendingPoints()
 
     def OnDoubleClick2(self, event):
-
-        #item10 = self.tv3.selection()[0]
-        #self.item10 = self.tv3.item(item10,"text")
         curItem = self.treeview3.focus()
         NewDic = self.treeview3.item(curItem)
-        #print (self.treeview3.item(curItem))
         newlist = NewDic['values']
-        #print(newlist)
-
         self.item10 = newlist[0]
         self.newitem1 = newlist[1]
         self.newitem2 = newlist[2]
         self.newitem3 = newlist[3]
 
-        #try:
-        #    print(item10)
-        #except:
-        #    pass
-
     def PendingCityOfficial(self):
-
-        from tkinter import ttk as ttk
-
         self.adminWin.withdraw()
         cityoffWin=Toplevel()
-        cityoffWin.title('Pending City official')
-        cityoffWin.geometry("900x350+1+1") #changed
+        cityoffWin.title('Pending Data Points')
+        cityoffWin.geometry("800x350+1+1")
         self.cityoffWin = cityoffWin
-
-        body = Canvas(cityoffWin, width=650, height=300)
-
-        body.create_line(0, 50, 650,50)
-        body.create_line(0, 290, 650, 290)
-        title = body.create_text(325, 100)
 
         header = Canvas(cityoffWin, width=500, height=65)
         header.pack()
-        header.create_rectangle(10,5,500,50) #changed
-        title = header.create_text(250,27.5) #changed
-
+        header.create_rectangle(10,5,500,50)
+        title = header.create_text(250,27.5)
         header.itemconfig(title, text="Pending City Officials", font=('normal', 14), fill="goldenrod")
+        warning = header.create_text(120, 61)
+        header.itemconfig(warning, text="Please double click to select city official", font=('normal', 12), fill="red")
+
         Frame1=Frame(cityoffWin)
         Frame1.pack(pady=10)
 
@@ -1122,16 +1108,14 @@ class Project:
         tv4.column('State', anchor='center', width=100)
         tv4.heading('Title', text='Title')
         tv4.column('Title', anchor='center', width=100)
-        tv4.grid(row=0, column=1)
+        tv4.grid(row = 0, column = 1)
         self.tv4.bind("<Double 1>", self.OnDoubleClick3)
         self.treeview4 = tv4
 
         B1 = Button(Frame1, text="Accept", command=self.changeButton3, width=10)
         B1.grid(row=1, column=0, pady=10)
-
         B2 = Button(Frame1, text="Reject", command=self.changeButton4, width=10)
         B2.grid(row=1, column=2, pady=10)
-
         B3 = Button(Frame1, text="Go back", command=self.AdminWindow2, width=10)
         B3.grid(row=0, column=2, pady=10)
 
@@ -1140,9 +1124,8 @@ class Project:
     def LoadTable4(self):
         db = self.Connect()
         c = db.cursor()
-        ans = c.execute("SELECT USER.Username, CITYOFFICIAL.EmailAddress, CITYOFFICIAL.Ocity, CITYOFFICIAL.Ostate, CITYOFFICIAL.Title FROM USER Natural JOIN CITYOFFICIAL WHERE CITYOFFICIAL.Approved =  'None'")
+        c.execute("SELECT USER.Username, CITYOFFICIAL.EmailAddress, CITYOFFICIAL.Ocity, CITYOFFICIAL.Ostate, CITYOFFICIAL.Title FROM USER Natural JOIN CITYOFFICIAL WHERE CITYOFFICIAL.Approved =  'None'")
         newtup = c.fetchall()
-        print(newtup)
         newlist = list(newtup)
         var = StringVar()
         for values in newlist:
@@ -1181,19 +1164,14 @@ class Project:
         from tkinter import ttk as ttk
         reportWin=Toplevel()
         reportWin.title('POI Report')
-        reportWin.geometry("1500x500+1+1")
+        reportWin.geometry("1500x350+1+1")
         self.reportWin = reportWin
-        body = Canvas(reportWin, width=650, height=300)
-        body.create_line(0, 50, 650,50)
-        body.create_line(0, 290, 650, 290)
-        title = body.create_text(325, 100)
-
         header = Canvas(reportWin, width=500, height=65)
         header.pack()
-        header.create_rectangle(10,5,500,50) #changed
-        title = header.create_text(250,27.5) #changed
-
+        header.create_rectangle(10,5,500, 50)
+        title = header.create_text(250, 27.5)
         header.itemconfig(title, text="POI Report", font=('normal', 14), fill = "goldenrod")
+
         Frame1=Frame(reportWin)
         Frame1.pack(pady=10)
 
@@ -1256,11 +1234,10 @@ class Project:
         self.CityOffFunct()
         self.reportWin.withdraw()
 
-
     def LoadTableReport(self):
         db = self.Connect()
         c = db.cursor()
-        ans = c.execute("SELECT DLocationName AS POILocation, Pcity AS City, Pstate AS State, MoldMIN, MoldAVG, MoldMAX, AQMIN, AQAVG, AQMAX, ( NumberDataPoints + NumberDataPoints1) AS NumberDataPoints, Flag AS Flagged FROM (SELECT DLocationName, Pcity, Pstate, Flag, MIN( DataValue ) AS MoldMIN, AVG(DataValue ) AS MoldAVG, MAX( DataValue ) AS MoldMAX, COUNT( * ) AS NumberDataPoints1 FROM DATAPOINT NATURAL JOIN POI WHERE DATAPOINT.DLocationName = POI.LocationName AND DType =  'Mold' AND Accepted ='Yes' GROUP BY DLocationName) AS MOLD NATURAL JOIN (SELECT DLocationName, Pcity, Pstate, Flag, MIN( DataValue ) AS AQMin, AVG( DataValue ) AS AQAVG, MAX( DataValue )AS AQMAX, COUNT( * ) AS NumberDataPoints FROM DATAPOINT NATURAL JOIN POI WHERE DATAPOINT.DLocationName = POI.LocationName AND DType =  'Air Quality' AND Accepted ='Yes' GROUP BY DLocationName) AS AQ")
+        c.execute("SELECT DLocationName AS POILocation, Pcity AS City, Pstate AS State, MoldMIN, MoldAVG, MoldMAX, AQMIN, AQAVG, AQMAX, ( NumberDataPoints + NumberDataPoints1) AS NumberDataPoints, Flag AS Flagged FROM (SELECT DLocationName, Pcity, Pstate, Flag, MIN( DataValue ) AS MoldMIN, AVG(DataValue ) AS MoldAVG, MAX( DataValue ) AS MoldMAX, COUNT( * ) AS NumberDataPoints1 FROM DATAPOINT NATURAL JOIN POI WHERE DATAPOINT.DLocationName = POI.LocationName AND DType =  'Mold' AND Accepted ='Yes' GROUP BY DLocationName) AS MOLD NATURAL JOIN (SELECT DLocationName, Pcity, Pstate, Flag, MIN( DataValue ) AS AQMin, AVG( DataValue ) AS AQAVG, MAX( DataValue )AS AQMAX, COUNT( * ) AS NumberDataPoints FROM DATAPOINT NATURAL JOIN POI WHERE DATAPOINT.DLocationName = POI.LocationName AND DType =  'Air Quality' AND Accepted ='Yes' GROUP BY DLocationName) AS AQ")
         newtup = c.fetchall()
         print(newtup)
         newlist = list(newtup)
@@ -1278,7 +1255,7 @@ class Project:
 
         db = self.Connect()
         c = db.cursor()
-        ans1 = c.execute("SELECT EmailAddress FROM CITYOFFICIAL WHERE Approved = 'Yes' AND EmailAddress = %s",(self.newitem4))
+        c.execute("SELECT EmailAddress FROM CITYOFFICIAL WHERE Approved = 'Yes' AND EmailAddress = %s",(self.newitem4))
         newtup=c.fetchall()
         newlist = list(newtup)
         if len(newlist) ==1 :
@@ -1286,7 +1263,7 @@ class Project:
             return
 
         c = db.cursor()
-        ans = c.execute("UPDATE CITYOFFICIAL SET Approved = 'Yes' WHERE EmailAddress = %s",(self.newitem4))
+        c.execute("UPDATE CITYOFFICIAL SET Approved = 'Yes' WHERE EmailAddress = %s",(self.newitem4))
         messagebox.showinfo("City Official Successfully Approved!!", "City Official was approved successfully.") 
         self.cityoffWin.withdraw()
         self.PendingCityOfficial()
@@ -1301,15 +1278,14 @@ class Project:
 
         db = self.Connect()
         c = db.cursor()
-        ans1 = c.execute("SELECT EmailAddress FROM CITYOFFICIAL WHERE Approved = 'No' AND EmailAddress = %s",(self.newitem4))
-        newtup=c.fetchall()
+        c.execute("SELECT EmailAddress FROM CITYOFFICIAL WHERE Approved = 'No' AND EmailAddress = %s",(self.newitem4))
+        newtup = c.fetchall()
         newlist = list(newtup)
         if len(newlist) ==1 :
             messagebox.showerror("Invalid Selection.","""Invalid Selection. \n\n Please select the row with a double click""")
             return
-
         c = db.cursor()
-        ans = c.execute("UPDATE CITYOFFICIAL SET Approved = 'No' WHERE EmailAddress = %s",(self.newitem4)) 
+        c.execute("UPDATE CITYOFFICIAL SET Approved = 'No' WHERE EmailAddress = %s",(self.newitem4))
         messagebox.showinfo("City Official Successfully Rejected!!", "City Official was rejected successfully.") 
         self.cityoffWin.withdraw()
         self.PendingCityOfficial()
@@ -1327,7 +1303,6 @@ class Project:
         self.cityoffWin.withdraw()
         self.AdminFunct()
 
-
     def BacktoAddPoint(self):
         self.addNewDataPoint()
         self.dWin.withdraw()
@@ -1336,14 +1311,13 @@ class Project:
         self.LoginPage()
         self.cWin.withdraw()
         self.dWin.withdraw()
-            
+
     def Connect(self):
         import pymysql
         db = pymysql.connect(host = "academic-mysql.cc.gatech.edu", user = "cs4400_72", passwd = "3KWi_FQU", db="cs4400_72")
         self.db = db
         db.autocommit(True)
         return db
-
 root = Tk()
 root.withdraw()
 root.title("Login")
