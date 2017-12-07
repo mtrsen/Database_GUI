@@ -1,0 +1,8 @@
+<module name="Checker">
+	<module name="SuppressionCommentFilter"/>
+	<module name="SuppressWarningsFilter"/>
+	<module name="TreeWalker">
+		<module name="FileContentsHolder"/>
+		<module name="SuppressWarningsHolder"/>
+	</module>
+</module>
